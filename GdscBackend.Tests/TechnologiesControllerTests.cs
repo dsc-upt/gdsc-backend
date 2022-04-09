@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using AutoMapper;
 using Faker;
@@ -19,10 +20,12 @@ namespace GdscBackend.Tests;
 public class TechnologiesControllerTests : TestingBase
 {
     private readonly IMapper _mapper;
-    private readonly IEnumerable<TechnologyModel> _testData = _getTestData();
-
+    private static readonly List<FileModel> _testIcons = _getTestIcons();
+    private static readonly IEnumerable<TechnologyModel> _testData = _getTestData();
+    
     public TechnologiesControllerTests(ITestOutputHelper outputHelper) : base(outputHelper)
     {
+        
         var mapconfig = new MapperConfiguration(cfg => cfg.AddProfile(new MappingProfiles()));
         _mapper = mapconfig.CreateMapper();
     }
@@ -36,13 +39,13 @@ public class TechnologiesControllerTests : TestingBase
         {
             Name = Lorem.Words(3).ToString(),
             Description = Lorem.Sentence(7),
-            Icon = Lorem.Words(1).ToString()
+            IconId = Lorem.Words(1).ToString()
         };
         var example2 = new TechnologyRequest
         {
             Name = Lorem.Words(3).ToString(),
             Description = Lorem.Sentence(7),
-            Icon = Lorem.Words(1).ToString()
+            IconId = Lorem.Words(1).ToString()
         };
 
         var added1 = await controller.Post(example1);
@@ -60,14 +63,14 @@ public class TechnologiesControllerTests : TestingBase
         Assert.NotNull(entity1.Id);
         Assert.Equal(StatusCodes.Status201Created, result1.StatusCode);
         Assert.Equal(example1.Description, entity1.Description);
-        Assert.Equal(example1.Icon, entity1.Icon);
+        Assert.Equal(example1.IconId, entity1.Icon.Id);
         Assert.Equal(example1.Name, entity1.Name);
 
         Assert.NotNull(entity2);
         Assert.NotNull(entity2.Id);
         Assert.Equal(StatusCodes.Status201Created, result2.StatusCode);
         Assert.Equal(example2.Description, entity2.Description);
-        Assert.Equal(example2.Icon, entity2.Icon);
+        Assert.Equal(example2.IconId, entity2.Icon.Id);
         Assert.Equal(example2.Name, entity2.Name);
     }
 
@@ -103,16 +106,38 @@ public class TechnologiesControllerTests : TestingBase
         Assert.Equal(_testData.Count() - 1, repository.DbSet.Count());
     }
 
+    private static List<FileModel> _getTestIcons()
+    {
+        var icons = new List<FileModel>();
+        for (var i = 0; i < 10; i++)
+        {
+            icons.Add(new FileModel
+            {
+                Id = Guid.NewGuid().ToString(),
+                Created = DateTime.UtcNow,
+                Updated = DateTime.UtcNow,
+                Name = Lorem.Words(1).ToString(),
+                Path = Lorem.Words(1).ToString(),
+                Extension = Lorem.Words(1).ToString(),
+                Size = RandomNumber.Next(long.MaxValue)
+            });
+        }
+
+        return icons;
+    }
     private static IEnumerable<TechnologyModel> _getTestData()
     {
+        
+        
         var models = new List<TechnologyModel>();
-        for (var _ = 0; _ < 10; _++)
+        for (var i = 0; i < 10; i++)
             models.Add(new TechnologyModel
             {
                 Id = Guid.NewGuid().ToString(),
                 Name = Lorem.Words(1).ToString(),
                 Description = Lorem.Words(1).ToString(),
-                Icon = Lorem.Words(1).ToString()
+                Icon = _testIcons[i]
+                
             });
 
         return models;

@@ -6,5 +6,5 @@ public class TechnologyRequest : Request
 
     public string Description { get; set; }
 
-    public string Icon { get; set; }
+    public string IconId { get; set; }
 }
