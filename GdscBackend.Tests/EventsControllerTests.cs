@@ -103,18 +103,66 @@ public class EventsControllerTests : TestingBase
         
         //Act
         var deleted1 = await controller.Delete(events.First().Id);
-        WriteLine(deleted1);
         var deleted2 = await controller.Delete(events.ToList()[1].Id);
 
         var result1 = deleted1.Result as OkObjectResult;
-        WriteLine(result1);
         var result2 = deleted2.Result as OkObjectResult;
-        WriteLine(result2);
         
         //Assert
         Assert.NotNull(result1);
         Assert.NotNull(result2);
 
+        var entity1 = result1.Value as EventModel;
+        var entity2 = result2.Value as EventModel;
+        
+        Assert.NotNull(entity1);
+        Assert.Equal(StatusCodes.Status200OK, result1.StatusCode);
+        
+        Assert.NotNull(entity2);
+        Assert.Equal(StatusCodes.Status200OK, result2.StatusCode);
+    }
+
+    [Fact]
+    public async void Update_ReturnOKObjectResult()
+    {
+        var repository = new Repository<EventModel>(new TestDbContext<EventModel>(_getTestData()).Object);
+        var imageId1 = Guid.NewGuid().ToString();
+        var imageId2 = Guid.NewGuid().ToString();
+        var filesRepository = new Repository<FileModel>(new TestDbContext<FileModel>(new[]
+            {
+                new FileModel { Id = imageId1, Extension = "txt", Name = "test", Path = "/media" },
+                new FileModel { Id = imageId2, Extension = "txt", Name = "test2", Path = "/media" }
+            }).Object);
+        var controller = new EventsController(repository, _mapper, filesRepository);
+        
+        var example1 = new EventRequest
+        {
+            Title = Lorem.Words(1).ToString(),
+            Description = Lorem.Words(5).ToString(),
+            ImageId = imageId1,
+            Start = Identification.DateOfBirth(),
+            End = Identification.DateOfBirth()
+        };
+        var example2 = new EventRequest
+        {
+            Title = Lorem.Words(1).ToString(),
+            Description = Lorem.Words(5).ToString(),
+            ImageId = imageId2,
+            Start = Identification.DateOfBirth(),
+            End = Identification.DateOfBirth()
+        };
+        
+        //Act
+        var updated1 = await controller.Update(example1);
+        var updated2 = await controller.Update(example2);
+
+        var result1 = updated1.Result as OkObjectResult;
+        var result2 = updated2.Result as OkObjectResult;
+        
+        //Assert
+        Assert.NotNull(result1);
+        Assert.NotNull(result2);
+        
         var entity1 = result1.Value as EventModel;
         var entity2 = result2.Value as EventModel;
         
